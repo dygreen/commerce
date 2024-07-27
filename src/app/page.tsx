@@ -1,10 +1,27 @@
+'use client'
+
 import Image from 'next/image'
 import styles from './page.module.css'
+import { useRef } from 'react'
 
 export default function Home() {
+    const inputRef = useRef<HTMLInputElement>(null)
+    const handleClick = () => {
+        if (inputRef.current == null || inputRef.current.value === '') {
+            alert('name 을 넣어주세요.')
+            return
+        }
+        fetch(`/api/add-item?name=${inputRef.current.value}`)
+            .then((res) => res.json())
+            .then((data) => {
+                alert(data.message)
+            })
+    }
     return (
         <main className={styles.main}>
             <div className={styles.description}>
+                <input ref={inputRef} type="text" placeholder="name" />
+                <button onClick={handleClick}>Add Jacket</button>
                 <p>
                     Get started by editing&nbsp;
                     <code className={styles.code}>src/app/page.tsx</code>
