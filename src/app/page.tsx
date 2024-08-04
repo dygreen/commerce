@@ -1,118 +1,91 @@
 'use client'
 
-import Image from 'next/image'
-import styles from './page.module.css'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function Home() {
+    const [products, setProducts] = useState<
+        { id: string; properties: { id: string }[] }[]
+    >([])
     const inputRef = useRef<HTMLInputElement>(null)
+
+    const fetchGetItems = async () => {
+        try {
+            const response = await fetch('/api/get-items')
+            const data = await response.json()
+            setProducts(data.item)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    const fetchAddItems = async () => {
+        try {
+            const response = await fetch(
+                `/api/add-item?name=${inputRef?.current?.value}`,
+            )
+            const data = await response.json()
+            alert(data.message)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     const handleClick = () => {
         if (inputRef.current == null || inputRef.current.value === '') {
             alert('name 을 넣어주세요.')
             return
         }
-        fetch(`/api/add-item?name=${inputRef.current.value}`)
-            .then((res) => res.json())
-            .then((data) => {
-                alert(data.message)
-            })
+        fetchAddItems()
     }
+
+    const fetchGetDetail = async (pageId: string, propertyId: string) => {
+        try {
+            const response = await fetch(
+                `/api/get-detail?pageId=${pageId}&propertyId=${propertyId}`,
+            )
+            const data = await response.json()
+            alert(JSON.stringify(data.detail))
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    useEffect(() => {
+        fetchGetItems()
+    }, [])
+
     return (
-        <main className={styles.main}>
-            <div className={styles.description}>
+        <main>
+            <div>
                 <input ref={inputRef} type="text" placeholder="name" />
                 <button onClick={handleClick}>Add Jacket</button>
-                <p>
-                    Get started by editing&nbsp;
-                    <code className={styles.code}>src/app/page.tsx</code>
-                </p>
-                <div>
-                    <a
-                        href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        By{' '}
-                        <Image
-                            src="/vercel.svg"
-                            alt="Vercel Logo"
-                            className={styles.vercelLogo}
-                            width={100}
-                            height={24}
-                            priority
-                        />
-                    </a>
-                </div>
             </div>
-
-            <div className={styles.center}>
-                <Image
-                    className={styles.logo}
-                    src="/next.svg"
-                    alt="Next.js Logo"
-                    width={180}
-                    height={37}
-                    priority
-                />
-            </div>
-
-            <div className={styles.grid}>
-                <a
-                    href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    className={styles.card}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <h2>
-                        Docs <span>-&gt;</span>
-                    </h2>
-                    <p>
-                        Find in-depth information about Next.js features and
-                        API.
-                    </p>
-                </a>
-
-                <a
-                    href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    className={styles.card}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <h2>
-                        Learn <span>-&gt;</span>
-                    </h2>
-                    <p>
-                        Learn about Next.js in an interactive course
-                        with&nbsp;quizzes!
-                    </p>
-                </a>
-
-                <a
-                    href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    className={styles.card}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <h2>
-                        Templates <span>-&gt;</span>
-                    </h2>
-                    <p>Explore starter templates for Next.js.</p>
-                </a>
-
-                <a
-                    href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    className={styles.card}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <h2>
-                        Deploy <span>-&gt;</span>
-                    </h2>
-                    <p>
-                        Instantly deploy your Next.js site to a shareable URL
-                        with Vercel.
-                    </p>
-                </a>
+            <div>
+                <p>Product List</p>
+                {products &&
+                    products.map((item) => (
+                        <div key={item.id}>
+                            {JSON.stringify(item)}
+                            {item.properties &&
+                                Object.entries(item.properties).map(
+                                    ([key, value]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() =>
+                                                fetchGetDetail(
+                                                    item.id,
+                                                    value.id,
+                                                )
+                                            }
+                                        >
+                                            {key}
+                                        </button>
+                                    ),
+                                )}
+                            <br />
+                            <br />
+                        </div>
+                    ))}
             </div>
         </main>
     )
