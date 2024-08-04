@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from '@notionhq/client'
-
-const notion = new Client({
-    auth: 'secret_jhCV4YLPl4CStcZfr3o86oGMjG76ccBsB3OY5WWWFns',
-})
-
-const databaseId = '8fd172c923e6434c9c194bbf72f61af2'
+import notion from '@util/notion'
 
 async function addItem(name: string) {
     try {
         const response = await notion.pages.create({
-            parent: { database_id: databaseId },
+            parent: { database_id: process.env.NOTION_DATABASE_ID as string },
             properties: {
                 title: [
                     {
